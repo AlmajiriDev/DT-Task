@@ -2,7 +2,7 @@ const path = require('path')
 const { mongodb, ObjectId } = require('mongodb')
 const MongoClient = require("mongodb").MongoClient
 const multer = require('multer')
-// const path = require('path')
+const cors = require('cors')
 
 
 // function for storing uploading image
@@ -11,7 +11,7 @@ const storage = multer.diskStorage({
         cb(null, './uploads/');
       },
     filename: function (req, file, cb) {
-        cb(null, new Date().toISOString() + file.originalname);
+        cb(null, new Date().toISOString().replace(/:/g, '-') + file.originalname);
     }
 })
 
@@ -25,8 +25,9 @@ const client = new MongoClient(uri)
 
 exports.createEvent = async (req, res, next) => {
     const info = req.body
+    const eventImage = req.file
 
-    await addEvent(client, info)
+    await addEvent(client, [info, eventImage])
 
     async function addEvent(client, newEvent){
         try {
@@ -46,7 +47,7 @@ exports.createEvent = async (req, res, next) => {
 
 //get the event with the given id
 exports.getEventById = async (req, res, next) => {
-    var requestedEventId = req.body.id
+    var requestedEventId = req.params._id
     const paramsPassed = ObjectId(requestedEventId)
 
 
@@ -67,7 +68,7 @@ exports.getEventById = async (req, res, next) => {
             return res.status(201).json({event: result})            
         }   
         console.log(`No event with id ${requestedId} found`)
-        return res.status(500).json({message: "Event not found"})
+        return res.status(404).json({message: "Event not found"})
     }
 
 }
@@ -95,7 +96,7 @@ exports.getEventAndPaginate = async (req, res, next) => {
         })
         .catch((err)=>{
             console.log(`You have reached the end of the list of events`)
-            return res.status(500).json({error: err})
+            return res.status(400).json({error: err})
         })   
     }
 
@@ -145,8 +146,8 @@ exports.deleteEventById = async (req, res, next) => {
             console.log(`${result.modifiedCount} document(s) was/were deleted`)
             return res.status(201).json({event: result})            
         }   
-        console.log(`No event with id ${requestedId} found`)
-        return res.status(500).json({message: "Event not found"})
+        console.log(`No event with id  ${requestedId} found`)
+        return res.status(404).json({message: "Event not found"})
     }
 
 }

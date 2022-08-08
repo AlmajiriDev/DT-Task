@@ -1,13 +1,19 @@
+const cors = require('cors')
 const express = require("express")
 const app = express()
 const MongoClient = require("mongodb").MongoClient
 const eventRoute = require('./routes/event')
+const path = require('path')
+
+
 // const bodyParser = require('body-parser')
 
 
 //parse the body to json
 // app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.json())
+app.use(express.urlencoded({extended: true}))
+
 
 
 
